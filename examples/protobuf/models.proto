@@ -59,3 +59,18 @@ message AppAccess {
     }
   };
 }
+
+message Post {
+  option (protosurrealorm.orm_model) = {
+    kind: "node"
+    table: "post"
+    schemaless: true
+    permissions: "FOR select WHERE published = true OR user = $auth.id\nFOR create, update WHERE user = $auth.id\nFOR delete WHERE user = $auth.id OR $auth.admin = true"
+  };
+
+  string id = 1 [(protosurrealorm.orm_field) = { name: "id" type: "record<post>" }];
+  string title = 2;
+  string body = 3;
+  bool published = 4;
+  string user = 5;
+}

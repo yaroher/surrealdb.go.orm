@@ -22,3 +22,13 @@ type Account struct {
 	ID   string
 	Name string
 }
+
+// orm:node table=post schemaless=true permissions="FOR select WHERE published = true OR user = $auth.id FOR create, update WHERE user = $auth.id FOR delete WHERE user = $auth.id OR $auth.admin = true"
+type Post struct {
+	// orm:field name=id type=record<post>
+	ID        string
+	Title     string
+	Body      string
+	Published bool
+	User      string
+}

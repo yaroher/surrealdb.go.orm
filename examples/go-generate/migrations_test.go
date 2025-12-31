@@ -70,4 +70,20 @@ func TestAutoMigrate(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, id+".down.surql")); err != nil {
 		t.Fatalf("expected down migration: %v", err)
 	}
+
+	upPath := filepath.Join(dir, id+".up.surql")
+	upSQL, err := os.ReadFile(upPath)
+	if err != nil {
+		t.Fatalf("read up migration: %v", err)
+	}
+	upText := string(upSQL)
+	if !strings.Contains(upText, "DEFINE TABLE post SCHEMALESS") {
+		t.Fatalf("expected post table in migration")
+	}
+	if !strings.Contains(upText, "PERMISSIONS") {
+		t.Fatalf("expected permissions in migration")
+	}
+	if !strings.Contains(upText, "FOR select") || !strings.Contains(upText, "FOR create, update") || !strings.Contains(upText, "FOR delete") {
+		t.Fatalf("expected permission clauses in migration")
+	}
 }

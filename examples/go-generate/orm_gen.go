@@ -23,6 +23,28 @@ func (a Account) Schema() AccountSchema {
 	}
 }
 
+type PostSchema struct {
+	ID        qb.Field[string]
+	Title     qb.Field[string]
+	Body      qb.Field[string]
+	Published qb.Field[bool]
+	User      qb.Field[string]
+}
+
+func (p Post) Table() qb.Table {
+	return qb.T("post")
+}
+
+func (p Post) Schema() PostSchema {
+	return PostSchema{
+		ID:        qb.F[string]("id"),
+		Title:     qb.F[string]("title"),
+		Body:      qb.F[string]("body"),
+		Published: qb.F[bool]("published"),
+		User:      qb.F[string]("user"),
+	}
+}
+
 type UserSchema struct {
 	ID        qb.Field[string]
 	FirstName qb.Field[string]
@@ -70,6 +92,12 @@ func Resources() migrator.ResourceSet {
 	res.AddTable("account", qb.DefineTableName("account").PermissionsFull())
 	res.AddField("account", "id", qb.DefineFieldName("id", "account").Type("record<account>"))
 	res.AddField("account", "name", qb.DefineFieldName("name", "account").Type("string"))
+	res.AddTable("post", qb.DefineTableName("post").SchemaLess().PermissionsFor(qb.Raw("FOR select WHERE published = true OR user = $auth.id FOR create, update WHERE user = $auth.id FOR delete WHERE user = $auth.id OR $auth.admin = true")))
+	res.AddField("post", "id", qb.DefineFieldName("id", "post").Type("record<post>"))
+	res.AddField("post", "title", qb.DefineFieldName("title", "post").Type("string"))
+	res.AddField("post", "body", qb.DefineFieldName("body", "post").Type("string"))
+	res.AddField("post", "published", qb.DefineFieldName("published", "post").Type("bool"))
+	res.AddField("post", "user", qb.DefineFieldName("user", "post").Type("string"))
 	res.AddTable("users", qb.DefineTableName("users").PermissionsFull())
 	res.AddField("users", "id", qb.DefineFieldName("id", "users").Type("record<users>"))
 	res.AddField("users", "first_name", qb.DefineFieldName("first_name", "users").Type("string"))
