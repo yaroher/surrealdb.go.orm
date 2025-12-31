@@ -177,6 +177,17 @@ func init() {
 	})
 }
 
+var connectFn = func(ctx context.Context, cfg migrator.Config) (migrator.DB, func(), error) {
+	client, err := surreal.Connect(ctx, cfg.DSN, cfg.NS, cfg.DB, cfg.Username, cfg.Password)
+	if err != nil {
+		return nil, func() {}, err
+	}
+	cleanup := func() {
+		_ = client.Close(context.Background())
+	}
+	return surreal.Adapter{DB: client}, cleanup, nil
+}
+
 func buildMigrator(cmd *cobra.Command) (*migrator.Migrator, context.Context, func(), error) {
 	dir, _ := cmd.Flags().GetString("dir")
 	mode, _ := cmd.Flags().GetString("mode")
@@ -211,13 +222,13 @@ func buildMigrator(cmd *cobra.Command) (*migrator.Migrator, context.Context, fun
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	client, err := surreal.Connect(ctx, cfg.DSN, cfg.NS, cfg.DB, cfg.Username, cfg.Password)
+	db, closeFn, err := connectFn(ctx, cfg)
 	if err != nil {
 		cancel()
 		return nil, nil, func() {}, err
 	}
 	cleanup := func() {
-		_ = client.Close(context.Background())
+		closeFn()
 		cancel()
 	}
 
@@ -227,7 +238,7 @@ func buildMigrator(cmd *cobra.Command) (*migrator.Migrator, context.Context, fun
 	} else {
 		prompter = migrator.RealPrompter{}
 	}
-	m := migrator.New(surreal.Adapter{DB: client}, cfg, prompter)
+	m := migrator.New(db, cfg, prompter)
 	return m, ctx, cleanup, nil
 }
 

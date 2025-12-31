@@ -6,13 +6,22 @@ import (
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
+var queryFn = surrealdb.Query[[]map[string]any]
+var fromEndpointFn = surrealdb.FromEndpointURLString
+var signInFn = func(ctx context.Context, db *surrealdb.DB, auth surrealdb.Auth) (any, error) {
+	return db.SignIn(ctx, auth)
+}
+var useFn = func(ctx context.Context, db *surrealdb.DB, ns, dbName string) error {
+	return db.Use(ctx, ns, dbName)
+}
+
 // Adapter wraps surrealdb.DB to satisfy migrator.DB.
 type Adapter struct {
 	DB *surrealdb.DB
 }
 
 func (a Adapter) Query(ctx context.Context, sql string, vars map[string]any) ([]map[string]any, error) {
-	res, err := surrealdb.Query[[]map[string]any](ctx, a.DB, sql, vars)
+	res, err := queryFn(ctx, a.DB, sql, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -28,12 +37,12 @@ func (a Adapter) Query(ctx context.Context, sql string, vars map[string]any) ([]
 
 // Connect establishes a SurrealDB connection and signs in if credentials provided.
 func Connect(ctx context.Context, dsn, ns, db, user, pass string) (*surrealdb.DB, error) {
-	client, err := surrealdb.FromEndpointURLString(ctx, dsn)
+	client, err := fromEndpointFn(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}
 	if user != "" || pass != "" {
-		_, err = client.SignIn(ctx, surrealdb.Auth{
+		_, err = signInFn(ctx, client, surrealdb.Auth{
 			Namespace: ns,
 			Database:  db,
 			Username:  user,
@@ -44,7 +53,7 @@ func Connect(ctx context.Context, dsn, ns, db, user, pass string) (*surrealdb.DB
 		}
 	}
 	if ns != "" || db != "" {
-		if err := client.Use(ctx, ns, db); err != nil {
+		if err := useFn(ctx, client, ns, db); err != nil {
 			return nil, err
 		}
 	}

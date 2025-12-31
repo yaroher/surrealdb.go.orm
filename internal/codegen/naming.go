@@ -48,19 +48,39 @@ func toCamel(s string) string {
 func splitWords(s string) []string {
 	var out []string
 	var current []rune
-	var prevCat int
-	for i, r := range s {
-		cat := charClass(r)
-		if i > 0 && cat != prevCat && len(current) > 0 {
-			out = append(out, string(current))
-			current = current[:0]
+	flush := func() {
+		if len(current) == 0 {
+			return
+		}
+		out = append(out, string(current))
+		current = current[:0]
+	}
+	runes := []rune(s)
+	for i, r := range runes {
+		if r == '_' || r == '-' || r == ' ' {
+			flush()
+			continue
+		}
+		if i > 0 {
+			prev := runes[i-1]
+			var next rune
+			if i+1 < len(runes) {
+				next = runes[i+1]
+			}
+			switch {
+			case unicode.IsUpper(r) && (unicode.IsLower(prev) || unicode.IsDigit(prev)):
+				flush()
+			case unicode.IsUpper(r) && unicode.IsUpper(prev) && next != 0 && unicode.IsLower(next):
+				flush()
+			case unicode.IsDigit(r) && !unicode.IsDigit(prev):
+				flush()
+			case !unicode.IsDigit(r) && unicode.IsDigit(prev):
+				flush()
+			}
 		}
 		current = append(current, r)
-		prevCat = cat
 	}
-	if len(current) > 0 {
-		out = append(out, string(current))
-	}
+	flush()
 	return out
 }
 
