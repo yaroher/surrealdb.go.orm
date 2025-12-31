@@ -1,0 +1,27 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - gosimple
+    - typecheck
+    - unused
+    - revive
+
+linters-settings:
+  revive:
+    rules:
+      - name: indent-error-flow
+      - name: early-return
+      - name: empty-lines
+      - name: unexported-return
+      - name: unused-parameter
+      - name: var-naming
+
+issues:
+  exclude-use-default: false
