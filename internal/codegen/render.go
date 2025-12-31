@@ -10,6 +10,15 @@ import (
 )
 
 func Render(dir string, pkg Package) error {
+	out, err := RenderToBytes(pkg)
+	if err != nil {
+		return err
+	}
+	path := outFileName(dir)
+	return os.WriteFile(path, out, 0o644)
+}
+
+func RenderToBytes(pkg Package) ([]byte, error) {
 	sort.Slice(pkg.Models, func(i, j int) bool { return pkg.Models[i].Name < pkg.Models[j].Name })
 
 	var buf bytes.Buffer
@@ -24,8 +33,7 @@ func Render(dir string, pkg Package) error {
 	}
 	renderResources(&buf, pkg.Models)
 
-	path := outFileName(dir)
-	return os.WriteFile(path, buf.Bytes(), 0o644)
+	return buf.Bytes(), nil
 }
 
 func renderImports(buf *bytes.Buffer, imports map[string]string) {

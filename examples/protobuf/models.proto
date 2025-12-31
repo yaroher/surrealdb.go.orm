@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package examples.protobuf;
+
+option go_package = "github.com/yaroher/surrealdb.go.orm/examples/protobuf;protobuf";
+
+import "protosurrealorm/anotations.proto";
+
+message User {
+  option (protosurrealorm.orm_model) = {
+    kind: "node"
+    table: "users"
+    rename_all: "snake_case"
+    permissions: "full"
+  };
+
+  string id = 1 [(protosurrealorm.orm_field) = { name: "id" type: "record<users>" }];
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4 [(protosurrealorm.orm_field) = { assert: "string::is::email($value)" }];
+  string account_id = 5 [(protosurrealorm.orm_field) = { link_one: "account" }];
+  int64 age = 6;
+}
+
+message Account {
+  option (protosurrealorm.orm_model) = {
+    kind: "node"
+    table: "account"
+    rename_all: "snake_case"
+    permissions: "full"
+  };
+
+  string id = 1 [(protosurrealorm.orm_field) = { name: "id" type: "record<account>" }];
+  string name = 2;
+}
+
+message UserAccount {
+  option (protosurrealorm.orm_model) = {
+    kind: "edge"
+    table: "user_account"
+    in: "User"
+    out: "Account"
+  };
+
+  string note = 1;
+}
+
+message AppAccess {
+  option (protosurrealorm.orm_model) = {
+    kind: "access"
+    access: {
+      name: "app_access"
+      on: "database"
+      type: "record"
+      signup: "create user"
+      signin: "select user"
+      refresh: true
+      authenticate: "auth::check()"
+    }
+  };
+}

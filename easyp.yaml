@@ -1,0 +1,20 @@
+lint:
+  use:
+    - DEFAULT
+  enum_zero_value_suffix: _NONE
+  service_suffix: API
+  ignore: []
+  except: []
+  allow_comment_ignores: false
+  ignore_only: {}
+generate:
+  inputs:
+    - directory: protosurrealorm
+  plugins:
+    - name: go
+      out: .
+      opts:
+        paths: source_relative
+breaking:
+  ignore: []
+  against_git_ref: master

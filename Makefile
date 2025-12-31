@@ -15,6 +15,8 @@ MIGRATE_CMD := $(GO) run ./cmd/surreal-orm migrate
 CMD_SURR := ./cmd/surreal-orm
 CMD_GEN := ./cmd/surreal-orm-gen
 
+EASYP_CMD := ${LOCAL_BIN}/easyp
+
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -26,8 +28,9 @@ help: # Показывает информацию о каждом рецепте
 .PHONY: .bin_deps
 .bin_deps: # Устанавливает зависимости необходимые для работы проекта
 	mkdir -p $(LOCAL_BIN)
-	GOBIN=$(LOCAL_BIN) GOPROXY=direct $(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	GOBIN=$(LOCAL_BIN) GOPROXY=direct $(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.7.2
 	GOBIN=$(LOCAL_BIN) GOPROXY=direct $(GO) install golang.org/x/tools/cmd/goimports@latest
+	GOBIN=$(LOCAL_BIN) GOPROXY=direct $(GO) install github.com/easyp-tech/easyp/cmd/easyp@latest
 
 .PHONY: .app_deps
 .app_deps: submodules # Устанавливает необходимые go пакеты
@@ -128,6 +131,10 @@ migrate-clear: # Сброс миграций
 .PHONY: migrate-prune
 migrate-prune: # Удаление старых миграций
 	$(MIGRATE_CMD) prune $(RUN_ARGS)
+
+.PHONY: generate-proto-anotations
+generate-proto-anotations: # Генерация аннотаций для proto файлов
+	$(EASYP_CMD) generate
 
 .PHONY: revision
 revision: # Создание тега из версии в src-tauri/Cargo.toml (use 'make revision force' to skip dirty check)

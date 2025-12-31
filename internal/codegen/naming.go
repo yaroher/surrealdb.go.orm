@@ -24,6 +24,14 @@ func applyRenameAll(name, renameAll string) string {
 	}
 }
 
+func ApplyRenameAll(name, renameAll string) string {
+	return applyRenameAll(name, renameAll)
+}
+
+func ToSnake(s string) string {
+	return toSnake(s)
+}
+
 func toSnake(s string) string {
 	words := splitWords(s)
 	return strings.ToLower(strings.Join(words, "_"))

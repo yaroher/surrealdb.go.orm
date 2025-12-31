@@ -235,6 +235,10 @@ func normalizeRef(name string) string {
 	return toSnake(name)
 }
 
+func NormalizeRef(name string) string {
+	return normalizeRef(name)
+}
+
 func collectImports(file *ast.File) map[string]string {
 	out := map[string]string{}
 	for _, imp := range file.Imports {

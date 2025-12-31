@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package protosurrealorm;
+
+option go_package = "github.com/yaroher/surrealdb.go.orm/protosurrealorm";
+
+import "google/protobuf/descriptor.proto";
+
+message AccessOptions {
+  string name = 1;
+  string on = 2;
+  string type = 3;
+  bool overwrite = 4;
+  bool if_not_exists = 5;
+  string alg = 6;
+  string key = 7;
+  string url = 8;
+  string signup = 9;
+  string signin = 10;
+  string issuer = 11;
+  bool refresh = 12;
+  string authenticate = 13;
+  string duration_grant = 14;
+  string duration_token = 15;
+  string duration_session = 16;
+  string grant_subject = 17;
+  string grant_token = 18;
+  string grant_duration = 19;
+}
+
+message ModelOptions {
+  string kind = 1;
+  string table = 2;
+  string rename_all = 3;
+  string in = 4;
+  string out = 5;
+  bool schemafull = 6;
+  bool schemaless = 7;
+  bool drop = 8;
+  string permissions = 9;
+  AccessOptions access = 10;
+}
+
+message FieldOptions {
+  string name = 1;
+  string type = 2;
+  string value = 3;
+  string assert = 4;
+  string default = 5;
+  string permissions = 6;
+  string link_one = 7;
+  string link_many = 8;
+  string link_self = 9;
+}
+
+extend google.protobuf.MessageOptions {
+  ModelOptions orm_model = 50001;
+}
+
+extend google.protobuf.FieldOptions {
+  FieldOptions orm_field = 50002;
+}
